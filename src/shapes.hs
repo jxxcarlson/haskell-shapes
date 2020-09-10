@@ -14,7 +14,7 @@ type Side = Double
 type Vertex = (Double, Double)
 type Vector = (Double, Double)
 
-data VertexData = VData (Vertex, Vertex) [Vertex] deriving Show
+data VertexData = VData Vertex Vertex [Vertex] deriving Show
 
 rectangle :: Side -> Side -> Shape
 rectangle a b = Rectangle a b
@@ -61,8 +61,9 @@ onLeft :: Vertex -> Vertex -> Vertex -> Bool
 onLeft from to v =
   let
     n = normalToSegment from to
+    d = direction from v
   in
-    dot v n > 0
+    dot d n > 0
 
 {-
   > prepareOne 0 vs
@@ -86,7 +87,7 @@ prepareOne k_ vs =
             then take k vs ++ drop (k + 2) vs
             else drop 1 (take k vs)
   in
-    VData (from, to) vs'
+    VData from to vs'
 
 prepare :: [Vertex] -> [VertexData]
 prepare vs =
@@ -102,19 +103,32 @@ andAll [] = True
 andAll (b:bs) = b && andAll bs
 
 
--- verticesOnLeft :: VertexData -> Bool
--- verticesOnLeft VData directedSegment vlist =
---   andAll (fmap (onLeft from to) vlist)
+verticesOnLeft :: VertexData -> Bool
+verticesOnLeft (VData from to vlist) =
+  andAll (fmap (onLeft from to) vlist)
 
 
--- convexVList :: [Vertex] -> Bool
--- convexVList vs
---   andAll (fmap )
+convex' :: [Vertex] -> Bool
+convex' vs =
+  andAll (fmap verticesOnLeft (prepare vs))
+
+convex :: Shape -> Bool
+convex shape =
+  case shape of
+    Rectangle _ _ -> True
+    Ellipse _ _ -> True
+    RtTriangle _ _ -> True
+    Polygon vList -> convex' vList
 
 -- TEST DATA
 
-quad = polygon [(0,0), (1,0), (2,1), (0,3)]
-quad2 = polygon [(0,0), (1,0), (0.5,1), (0,3)]
+quad = Polygon vs
+quad' = Polygon vs'
 
+{- Vertices of convex quadrilateeral -}
 vs :: [Vertex]
-vs = [(0,0), (1,0), (2,0), (3,0), (4,0), (5,0)]
+vs = [(0,0), (3,0), (3,3), (0,3)]
+
+{- Vertices of nonconvex quadrilateeral -}
+vs' :: [Vertex]
+vs' = [(0,0), (3,0), (1,2), (0,3)]
