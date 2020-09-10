@@ -1,4 +1,5 @@
-module Shape() where
+module Shape(Shape, rectangle, rtTriangle, ellipse, polygon, direction, normalToSegmen,
+  dot, onLeft, convex) where
 
 import Data.List.Index
 
